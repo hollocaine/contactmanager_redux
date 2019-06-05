@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import TextInputGroup from '../layout/TextInputGroup';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { getContact, updateContact } from '../../actions/ContactActions';
 
 class EditContact extends Component {
   state = {
@@ -8,8 +11,19 @@ class EditContact extends Component {
     phone: '',
     errors: {}
   };
-
-  onSubmit = (e) => {
+  componentWillReceiveProps(nextProps, nextState) {
+    const { name, email, phone } = nextProps.contact;
+    this.setState({
+      name,
+      email,
+      phone
+    });
+  }
+  componentDidMount() {
+    const { id } = this.props.match.params;
+    this.props.getContact(id);
+  }
+  onSubmit = e => {
     e.preventDefault();
 
     const { name, email, phone } = this.state;
@@ -30,16 +44,16 @@ class EditContact extends Component {
       return;
     }
 
+    const { id } = this.props.match.params;
+    //// UPDATE CONTACT ////
     const updContact = {
+      id,
       name,
       email,
       phone
     };
 
-    const { id } = this.props.match.params;
-
-    //// UPDATE CONTACT ////
-
+    this.props.updateContact(updContact);
     // Clear State
     this.setState({
       name: '',
@@ -98,4 +112,15 @@ class EditContact extends Component {
   }
 }
 
-export default EditContact;
+EditContact.proptypes = {
+  contact: PropTypes.object.isRequired,
+  getContact: PropTypes.func.isRequired
+};
+const mapStateToProps = state => ({
+  contact: state.contact.contact
+});
+
+export default connect(
+  mapStateToProps,
+  { getContact, updateContact }
+)(EditContact);
